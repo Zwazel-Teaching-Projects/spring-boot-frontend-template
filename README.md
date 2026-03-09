@@ -1,73 +1,41 @@
-# React + TypeScript + Vite
+# React Frontend Template
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This is a starter template for learning web development with a React frontend and a Spring Boot backend. It includes basic authentication, routing, and role-based access control.
 
-Currently, two official plugins are available:
+## 🚀 How to Start
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+1. **Install Dependencies**
+   ```bash
+   npm install
+   ```
 
-## React Compiler
+2. **Run the Development Server**
+   ```bash
+   npm run dev
+   ```
+   The app will be available at `http://localhost:5173`.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+> **Note:** Make sure your Spring Boot backend is running at `http://localhost:8080` for the API calls to work.
 
-## Expanding the ESLint configuration
+## 📂 Project Structure & Key Files
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+Here is where the magic happens:
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+### 1. API Configuration (`src/api/axios.ts`)
+This file sets up **Axios**, the library used to send requests to your backend. It defines the `baseURL` and ensures cookies are sent with every request.
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+### 2. Authentication State (`src/AuthContext.tsx`)
+This is the "brain" of the app's security. It tracks if a user is logged in, who they are, and provides `login` and `logout` functions to the rest of the app.
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+### 3. Routing & Security (`src/App.tsx`)
+This file defines the different pages (routes) of your app. It also uses "Protected Routes" to ensure only logged-in users can see the Dashboard.
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### 4. Components (`src/components/`)
+*   **`Login.tsx` & `Register.tsx`**: Handle user input and communicate with the backend to authenticate.
+*   **`Dashboard.tsx`**: A private page that shows how to fetch data and handle different user roles (e.g., User vs. Admin).
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## 💡 How to add a new page?
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+1. Create a new component in `src/components/`.
+2. Open `src/App.tsx`.
+3. Import your component and add a new `<Route>` inside the `<Routes>` block.
