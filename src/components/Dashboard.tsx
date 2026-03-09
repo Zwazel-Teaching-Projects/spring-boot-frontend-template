@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import axios from 'axios';
 import api from '../api/axios';
 import { useAuth } from '../AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -27,8 +28,12 @@ const Dashboard: React.FC = () => {
     try {
       const response = await api.post('/api/v1/user/resource');
       setMessage(response.data);
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Access Denied (User Resource)');
+    } catch (err: unknown) {
+      if (axios.isAxiosError(err)) {
+        setError(err.response?.data?.message || 'Access Denied (User Resource)');
+      } else {
+        setError('An unexpected error occurred');
+      }
     }
   };
 
@@ -38,8 +43,12 @@ const Dashboard: React.FC = () => {
     try {
       const response = await api.get('/api/v1/admin/resource');
       setMessage(response.data);
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Access Denied (Admin Resource)');
+    } catch (err: unknown) {
+      if (axios.isAxiosError(err)) {
+        setError(err.response?.data?.message || 'Access Denied (Admin Resource)');
+      } else {
+        setError('An unexpected error occurred');
+      }
     }
   };
 

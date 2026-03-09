@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import axios from 'axios';
 import api from '../api/axios';
 import { useAuth } from '../AuthContext';
 
@@ -17,8 +18,12 @@ const Register: React.FC = () => {
       const response = await api.post('/api/v1/auth/register', { email, password, role });
       login(response.data);
       navigate('/');
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Registration failed');
+    } catch (err: unknown) {
+      if (axios.isAxiosError(err)) {
+        setError(err.response?.data?.message || 'Registration failed');
+      } else {
+        setError('An unexpected error occurred');
+      }
     }
   };
 
