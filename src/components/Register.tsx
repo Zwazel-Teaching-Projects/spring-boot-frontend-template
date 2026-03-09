@@ -28,35 +28,61 @@ const Register: React.FC = () => {
   };
 
   return (
-    <div style={{ maxWidth: '400px', margin: '0 auto', padding: '20px', border: '1px solid #ccc', borderRadius: '8px', textAlign: 'center' }}>
-      <h2>Register</h2>
-      {error && <p style={{ color: 'red' }}>{error}</p>}
-      <form onSubmit={handleSubmit} style={{ textAlign: 'left' }}>
-        <div style={{ marginBottom: '15px' }}>
-          <label>Email:</label><br />
-          <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required style={{ width: '100%', boxSizing: 'border-box' }} />
-        </div>
-        <div style={{ marginBottom: '15px' }}>
-          <label>Password:</label><br />
-          <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required style={{ width: '100%', boxSizing: 'border-box' }} />
-          <small style={{ color: '#666', display: 'block', marginTop: '5px' }}>
-            Min 8 chars, must include uppercase, lowercase, digit, and special char.
-          </small>
-        </div>
-        <div style={{ marginBottom: '15px' }}>
-          <label>Role:</label><br />
-          <select value={role} onChange={(e) => setRole(e.target.value)} style={{ width: '100%', padding: '5px' }}>
-            <option value="USER">User</option>
-            <option value="ADMIN">Admin</option>
-          </select>
-        </div>
-        <button type="submit" style={{ width: '100%', padding: '10px', backgroundColor: '#28a745', color: 'white', border: 'none', borderRadius: '4px' }}>
-          Register
-        </button>
-      </form>
-      <p style={{ marginTop: '15px' }}>
-        Already have an account? <Link to="/login">Login here</Link>
-      </p>
+    <div className="flex items-center justify-center min-h-screen p-4">
+      <div className="w-full max-w-md p-8 space-y-6 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 text-center">
+        <h2 className="text-3xl font-bold text-gray-900 dark:text-white">Register</h2>
+        {error && <p className="text-red-500 text-sm font-medium">{error}</p>}
+        <form onSubmit={handleSubmit} className="space-y-4 text-left">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email</label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white dark:bg-gray-700 dark:text-white outline-none transition"
+              placeholder="you@example.com"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Password</label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white dark:bg-gray-700 dark:text-white outline-none transition"
+              placeholder="••••••••"
+            />
+            <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+              Min 8 chars, must include uppercase, lowercase, digit, and special char.
+            </p>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Initial Role</label>
+            <select
+              value={role}
+              onChange={(e) => setRole(e.target.value)}
+              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white dark:bg-gray-700 dark:text-white outline-none transition"
+            >
+              <option value="USER">User</option>
+              <option value="ADMIN">Admin</option>
+            </select>
+          </div>
+          <button
+            type="submit"
+            className="w-full py-3 px-4 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg shadow-md transition duration-200"
+          >
+            Register
+          </button>
+        </form>
+        <p className="mt-4 text-sm text-gray-600 dark:text-gray-400">
+          Already have an account?{' '}
+          <Link to="/login" className="text-green-600 dark:text-green-400 hover:underline font-medium">
+            Login here
+          </Link>
+        </p>
+      </div>
     </div>
   );
 };
