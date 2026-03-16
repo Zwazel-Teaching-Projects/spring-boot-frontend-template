@@ -6,7 +6,7 @@ import React, { createContext, useContext, useState, type ReactNode } from 'reac
  * This defines the shape of the User object we expect from the backend.
  * It helps TypeScript provide better autocompletion and error checking.
  */
-interface User {
+export interface User {
   id: string;
   email: string;
   roles: string[];
@@ -20,7 +20,8 @@ interface User {
  */
 interface AuthContextType {
   user: User | null; // The currently logged-in user, or null if logged out.
-  login: (userData: User) => void; // A function to set the user state.
+  token: string | null; // JWT token used by API and WebSocket calls.
+  login: (userData: User, authToken?: string | null) => void; // A function to set the user state.
   logout: () => void; // A function to clear the user state.
   isAuthenticated: boolean; // A helper to check if someone is logged in.
 }
@@ -38,17 +39,51 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   // Initialize user state. We check localStorage first so the user 
   // stays logged in even if they refresh the page.
   const [user, setUser] = useState<User | null>(() => {
+    const savedToken = localStorage.getItem('authToken');
+    if (!savedToken) {
+      localStorage.removeItem('user');
+      return null;
+    }
+
     const savedUser = localStorage.getItem('user');
-    return savedUser ? JSON.parse(savedUser) : null;
+    if (!savedUser) {
+      return null;
+    }
+
+    try {
+      const parsed = JSON.parse(savedUser) as Partial<User>;
+      if (typeof parsed.id !== 'string' || typeof parsed.email !== 'string' || !Array.isArray(parsed.roles)) {
+        localStorage.removeItem('user');
+        return null;
+      }
+
+      return {
+        id: parsed.id,
+        email: parsed.email,
+        roles: parsed.roles.filter((role): role is string => typeof role === 'string'),
+      };
+    } catch {
+      localStorage.removeItem('user');
+      return null;
+    }
   });
+  const [token, setToken] = useState<string | null>(() => localStorage.getItem('authToken'));
 
   /**
    * Sets the logged-in user and saves it to localStorage.
    * @param userData The user data received from the backend.
    */
-  const login = (userData: User) => {
+  const login = (userData: User, authToken?: string | null) => {
     setUser(userData);
     localStorage.setItem('user', JSON.stringify(userData));
+
+    if (authToken && authToken.trim()) {
+      setToken(authToken);
+      localStorage.setItem('authToken', authToken);
+    } else {
+      setToken(null);
+      localStorage.removeItem('authToken');
+    }
   };
 
   /**
@@ -56,14 +91,16 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
    */
   const logout = () => {
     setUser(null);
+    setToken(null);
     localStorage.removeItem('user');
+    localStorage.removeItem('authToken');
   };
 
   // Simple boolean to track if the user is currently authenticated.
-  const isAuthenticated = !!user;
+  const isAuthenticated = !!user && !!token;
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, isAuthenticated }}>
+    <AuthContext.Provider value={{ user, token, login, logout, isAuthenticated }}>
       {children}
     </AuthContext.Provider>
   );

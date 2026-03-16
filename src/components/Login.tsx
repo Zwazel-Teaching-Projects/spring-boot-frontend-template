@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import axios from 'axios';
 import api from '../api/axios';
 import { useAuth } from '../AuthContext';
+import { parseAuthResponse } from '../authResponse';
+import { getLoginReason } from '../authNavigation';
 
 /**
  * Login Component
@@ -18,19 +20,23 @@ const Login: React.FC = () => {
   
   // Hooks for navigating and managing authentication.
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { login } = useAuth();
+  const loginReason = getLoginReason(searchParams);
 
   /**
    * Called when the user clicks 'Login'
    */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError('');
     try {
       // Step 1: Send the email and password to the backend.
       const response = await api.post('/api/v1/auth/authenticate', { email, password });
+      const { user, token } = parseAuthResponse(response.data);
       
       // Step 2: If the backend says OK, we tell the 'AuthContext' to log in the user.
-      login(response.data);
+      login(user, token);
       
       // Step 3: Redirect the user to the dashboard.
       navigate('/');
@@ -38,6 +44,8 @@ const Login: React.FC = () => {
       // If something goes wrong (e.g., wrong password), we show an error message.
       if (axios.isAxiosError(err)) {
         setError(err.response?.data?.message || 'Login failed');
+      } else if (err instanceof Error) {
+        setError(err.message);
       } else {
         setError('An unexpected error occurred');
       }
@@ -50,7 +58,7 @@ const Login: React.FC = () => {
         <h2 className="text-3xl font-bold text-gray-900 dark:text-white">Login</h2>
         
         {/* If there's an error, we display it here. */}
-        {error && <p className="text-red-500 text-sm font-medium">{error}</p>}
+        {(error || loginReason) && <p className="text-red-500 text-sm font-medium">{error || loginReason}</p>}
         
         <form onSubmit={handleSubmit} className="space-y-4 text-left">
           <div>

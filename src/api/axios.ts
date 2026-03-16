@@ -1,4 +1,5 @@
-import axios from 'axios';
+import axios, { AxiosHeaders } from 'axios';
+import { redirectToLogin } from '../authNavigation';
 
 /**
  * Axios Instance Configuration
@@ -9,11 +10,42 @@ import axios from 'axios';
  */
 const api = axios.create({
   // The base URL of our Spring Boot API
-  baseURL: 'http://localhost:8080',
-  
+  baseURL: import.meta.env.VITE_API_BASE_URL ?? '',
+
   // This ensures that browser cookies (like session tokens) are sent
   // automatically with every request to the backend.
   withCredentials: true,
 });
+
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('authToken');
+
+  if (token) {
+    if (config.headers instanceof AxiosHeaders) {
+      config.headers.set('Authorization', `Bearer ${token}`);
+    } else {
+      config.headers = config.headers ?? {};
+      (config.headers as Record<string, string>).Authorization = `Bearer ${token}`;
+    }
+  }
+
+  return config;
+});
+
+api.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    if (axios.isAxiosError(error) && error.response?.status === 401) {
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('user');
+
+      if (window.location.pathname !== '/login') {
+        redirectToLogin('Session expired. Please log in again.');
+      }
+    }
+
+    return Promise.reject(error);
+  },
+);
 
 export default api;
