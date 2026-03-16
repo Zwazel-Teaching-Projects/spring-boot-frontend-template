@@ -70,8 +70,19 @@ const getWebSocketUrl = () => {
     return configuredUrl;
   }
 
+  const configuredApiBaseUrl = import.meta.env.VITE_API_BASE_URL;
+  if (configuredApiBaseUrl && /^https?:\/\//i.test(configuredApiBaseUrl)) {
+    const apiUrl = new URL(configuredApiBaseUrl);
+    const protocol = apiUrl.protocol === 'https:' ? 'wss' : 'ws';
+    return `${protocol}://${apiUrl.host}/chat`;
+  }
+
   const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
-  return `${protocol}://${window.location.host}/chat`;
+  const host = import.meta.env.DEV
+    ? `${window.location.hostname}:8080`
+    : window.location.host;
+
+  return `${protocol}://${host}/chat`;
 };
 
 /**
@@ -129,6 +140,9 @@ const Dashboard: React.FC = () => {
       maxReconnectDelay: 30000,
       connectionTimeout: 4000,
       beforeConnect: async () => {
+        setChatState('connecting');
+        setChatError(null);
+
         const currentToken = localStorage.getItem('authToken');
         if (!currentToken) {
           throw new Error('Missing JWT token. Log in again to connect chat.');
