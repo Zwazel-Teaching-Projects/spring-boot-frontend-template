@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import api from '../api/axios';
 import { useAuth } from '../AuthContext';
+import { parseAuthResponse } from '../authResponse';
 
 /**
  * Register Component
@@ -14,7 +15,6 @@ const Register: React.FC = () => {
   // State for form inputs.
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [role, setRole] = useState('USER'); // In a real app, you wouldn't let users pick their own roles!
   const [error, setError] = useState('');
   
   const navigate = useNavigate();
@@ -25,12 +25,14 @@ const Register: React.FC = () => {
    */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError('');
     try {
       // Step 1: Send registration data to the backend.
-      const response = await api.post('/api/v1/auth/register', { email, password, role });
+      const response = await api.post('/api/v1/auth/register', { email, password, role: 'USER' });
+      const { user, token } = parseAuthResponse(response.data);
       
       // Step 2: If registration is successful, the backend usually logs the user in immediately.
-      login(response.data);
+      login(user, token);
       
       // Step 3: Redirect to the dashboard.
       navigate('/');
@@ -38,6 +40,8 @@ const Register: React.FC = () => {
       // Error handling for registration (e.g., if email is already taken).
       if (axios.isAxiosError(err)) {
         setError(err.response?.data?.message || 'Registration failed');
+      } else if (err instanceof Error) {
+        setError(err.message);
       } else {
         setError('An unexpected error occurred');
       }
@@ -76,17 +80,6 @@ const Register: React.FC = () => {
             <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
               Min 8 chars, must include uppercase, lowercase, digit, and special char.
             </p>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Initial Role</label>
-            <select
-              value={role}
-              onChange={(e) => setRole(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white dark:bg-gray-700 dark:text-white outline-none transition"
-            >
-              <option value="USER">User</option>
-              <option value="ADMIN">Admin</option>
-            </select>
           </div>
           <button
             type="submit"
