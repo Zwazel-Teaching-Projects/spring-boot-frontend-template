@@ -1,9 +1,11 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from './AuthContext';
 import Login from './components/Login';
 import Register from './components/Register';
 import Dashboard from './components/Dashboard';
+import { setAuthFailureHandler } from './api/axios';
+import { createLoginPath } from './authNavigation';
 
 /**
  * ProtectedRoute Component
@@ -29,6 +31,24 @@ const PublicRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return isAuthenticated ? <Navigate to="/" /> : <>{children}</>;
 };
 
+const AuthFailureBridge: React.FC = () => {
+  const { logout } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    setAuthFailureHandler((reason) => {
+      logout();
+      navigate(createLoginPath(reason), { replace: true });
+    });
+
+    return () => {
+      setAuthFailureHandler(null);
+    };
+  }, [logout, navigate]);
+
+  return null;
+};
+
 /**
  * App Main Component
  * 
@@ -37,6 +57,7 @@ const PublicRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 function App() {
   return (
     <Router>
+      <AuthFailureBridge />
       <Routes>
         {/* The /login path: Only for visitors who are NOT logged in. */}
         <Route
